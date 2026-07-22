@@ -59,8 +59,8 @@ The `data/` directory is listed in [`.gitignore`](.gitignore) and is intentional
 Clone the repository, install dependencies, and download the dataset (see [Dataset](#dataset) above):
 
 ```bash
-git clone https://github.com/jai571771/S.H.I.E.L.D_AI.git
-cd S.H.I.E.L.D_AI
+git clone https://github.com/jai571771/S.H.E.I.L.D_AI.git
+cd S.H.E.I.L.D_AI
 pip install -r requirements.txt
 ```
 

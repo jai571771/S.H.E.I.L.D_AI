@@ -24,7 +24,7 @@ from src.inference.engine import InferenceEngine
 # PAGE CONFIGURATION - Professional Minimalistic Dark Theme (High Readability)
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="S.H.I.E.L.D. - Real-Time Industrial Safety Intelligence",
+    page_title="S.H.E.I.L.D - Real-Time Industrial Safety Intelligence",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -872,7 +872,7 @@ with logo_col:
         <div class="header-logo-container">
             <div class="header-logo-title">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="filter: drop-shadow(0px 0px 2px #38BDF8);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                S.H.I.E.L.D.
+                S.H.E.I.L.D.
             </div>
             <div class="header-subtitle">
                 Safety Hazard Evaluation & Intelligent Learning Dashboard
