@@ -1,0 +1,9 @@
+- [x] Implement global CSS & font configuration in both dashboards
+- [x] Implement Section 1: OVERALL RISK ANALYSIS in `app.py`
+- [x] Implement Section 2: PLANT HEALTH OVERVIEW in `app.py`
+- [x] Implement Section 3: AI EXPLANATION in `app.py`
+- [x] Implement Section 4: SUGGESTED WAYS TO INCREASE SCORE in `app.py`
+- [x] Implement Section 5: HEALTH SCORE VOLATILITY in `app.py`
+- [x] Implement Section 6: MOST CONTRIBUTING FACTORS TO HEALTH SCORE REDUCTION in `app.py`
+- [x] Port layout & styling changes to `demo_dashboard.py` (preserving scenario controls)
+- [/] Verify dashboards at port 8501 and 8502

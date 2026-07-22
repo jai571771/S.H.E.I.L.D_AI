@@ -1,0 +1,50 @@
+# ==========================
+# Dataset
+# ==========================
+data/
+
+# ==========================
+# Trained Models
+# ==========================
+models/
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+.idea/
+
+# Streamlit secrets (existing — do not commit credentials)
+.streamlit/secrets.toml
+
+# Logs (existing)
+*.log
+preprocessing_pipeline.log
+replay_run.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

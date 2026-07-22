@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.H.E.I.L.D. — AI Safety Command Center</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0D1117;
+            --card-bg: rgba(22, 27, 34, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+
+            --color-safe: #10B981;
+            --color-safe-glow: rgba(16, 185, 129, 0.2);
+            --color-medium: #F59E0B;
+            --color-medium-glow: rgba(245, 158, 11, 0.2);
+            --color-high: #F97316;
+            --color-high-glow: rgba(249, 115, 22, 0.2);
+            --color-critical: #EF4444;
+            --color-critical-glow: rgba(239, 68, 68, 0.3);
+            --color-ai: #06B6D4;
+            --color-info: #3B82F6;
+
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 100%, rgba(16, 185, 129, 0.06), transparent);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Command Center Header */
+        header.command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0px 16px 0px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .shield-icon-glow {
+            width: 48px;
+            height: 48px;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .header-hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFFFFF 30%, var(--color-ai) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Demo Scenario Controls */
+        .demo-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            padding: 6px 16px;
+        }
+
+        .demo-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .demo-btn.active-safe {
+            background: var(--color-safe-glow);
+            color: var(--color-safe);
+            border-color: var(--color-safe);
+        }
+
+        .demo-btn.active-medium-risk {
+            background: var(--color-medium-glow);
+            color: var(--color-medium);
+            border-color: var(--color-medium);
+        }
+
+        .demo-btn.active-high-risk {
+            background: var(--color-high-glow);
+            color: var(--color-high);
+            border-color: var(--color-high);
+        }
+
+        .demo-btn.active-critical-alert {
+            background: var(--color-critical-glow);
+            color: var(--color-critical);
+            border-color: var(--color-critical);
+        }
+
+        /* Main 50% / 50% Grid */
+        .grid-split-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Hero Risk Card (Top Left) */
+        .hero-card {
+            background: linear-gradient(145deg, rgba(22, 27, 34, 0.85), rgba(15, 23, 42, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hero-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-shield-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: all 0.4s ease;
+        }
+
+        .hero-score-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .hero-score-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -1.5px;
+            transition: color 0.4s ease;
+        }
+
+        .hero-score-denom {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            border-radius: 100px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            transition: all 0.4s ease;
+        }
+
+        .hero-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .meta-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        /* Contributors List (Bottom Left) */
+        .contributor-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .contributor-info {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 220px;
+        }
+
+        .contributor-bar-wrapper {
+            flex: 1;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .contributor-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.5s ease, background 0.5s ease;
+        }
+
+        .contributor-score {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Donut Progress Rings (Top Right) */
+        .circles-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .circle-health-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+        }
+
+        .ring-svg-wrapper {
+            position: relative;
+            width: 65px;
+            height: 65px;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 6;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 188;
+            /* 2 * pi * 30 */
+            transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;
+        }
+
+        .ring-inner-val {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .circle-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            line-height: 1.1;
+        }
+
+        .circle-status-pill {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* 4 Minimal KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .kpi-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+
+        /* AI Insights & Recommendations (Bottom Right) */
+        .ai-insights-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .ai-explanation-box {
+            background: linear-gradient(145deg, rgba(6, 182, 212, 0.08), rgba(22, 27, 34, 0.8));
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .rec-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+
+        .rec-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .priority-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-critical);
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--color-medium);
+        }
+
+        .priority-low {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--color-info);
+        }
+
+        .rec-gain {
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--color-safe);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Container -->
+    <header class="command-header">
+        <div class="header-brand">
+            <div class="shield-icon-glow">🛡️</div>
+            <div>
+                <h1 class="header-hero-title">S.H.E.I.L.D. AI Intelligence Layer</h1>
+                <div class="header-subtitle">Predictive Industrial Safety Intelligence</div>
+            </div>
+        </div>
+
+        <!-- Demo Scenario Controls -->
+        <div class="demo-bar">
+            <span class="demo-label">Demo Scenario:</span>
+            <button class="demo-btn active-safe" onclick="setRiskScenario('Safe', this)">🟢 Safe (87/100)</button>
+            <button class="demo-btn" onclick="setRiskScenario('Medium Risk', this)">🟡 Medium (68/100)</button>
+            <button class="demo-btn" onclick="setRiskScenario('High Risk', this)">🟠 High (45/100)</button>
+            <button class="demo-btn" onclick="setRiskScenario('Critical Alert', this)">🔴 Critical (18/100)</button>
+        </div>
+
+        <div style="text-align: right; font-size: 13px; font-weight: 600; color: var(--text-secondary);">
+            <span id="live-clock">2026-07-20 11:01:06</span> &nbsp;•&nbsp;
+            <span style="color: var(--color-safe); font-weight: 700;">● LIVE CONNECTED</span>
+        </div>
+    </header>
+
+    <!-- Main Content 50% / 50% Grid -->
+    <main class="grid-split-2">
+
+        <!-- LEFT PANEL (50%) -->
+        <div class="column-flex">
+
+            <!-- Hero Risk Card -->
+            <section class="hero-card">
+                <div class="hero-top-row">
+                    <div id="shield-wrapper" class="hero-shield-icon"
+                        style="background: var(--color-safe-glow); border: 1px solid var(--color-safe); color: var(--color-safe);">
+                        🛡️
+                    </div>
+                    <div class="hero-score-wrapper">
+                        <span id="hero-score-val" class="hero-score-val" style="color: var(--color-safe);">87</span>
+                        <span class="hero-score-denom">/ 100</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="meta-label">Overall Plant Health Condition</div>
+                    <div id="risk-badge" class="risk-badge"
+                        style="background: var(--color-safe-glow); color: var(--color-safe); border: 1px solid var(--color-safe); box-shadow: 0 0 25px var(--color-safe-glow);">
+                        🟢 Safe Operation
+                    </div>
+                </div>
+
+                <div class="hero-meta-grid">
+                    <div>
+                        <div class="meta-label">AI Confidence</div>
+                        <div id="meta-confidence" class="meta-val">98.4%</div>
+                    </div>
+                    <div>
+                        <div class="meta-label">Forecast Horizon</div>
+                        <div class="meta-val">15 Minutes</div>
+                    </div>
+                    <div>
+                        <div class="meta-label">Last Updated</div>
+                        <div class="meta-val">Just now</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Health Score Trend & Contributors -->
+            <section class="glass-card" style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin: 0;">Health Score Trend</h2>
+                    <div
+                        style="font-size: 12px; font-weight: 600; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 100px;">
+                        Day View
+                    </div>
+                </div>
+
+                <div style="height: 180px; margin-bottom: 16px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+
+                <div
+                    style="font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px;">
+                    Biggest Contributors
+                </div>
+
+                <div id="contributors-list">
+                    <!-- Dynamic Bars -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT PANEL (50%) -->
+        <div class="column-flex">
+
+            <!-- Plant Health Overview (6 Circular Rings & 4 KPI Cards) -->
+            <section class="glass-card">
+                <h2 class="section-title">Plant Health Overview</h2>
+
+                <div id="circles-grid" class="circles-grid">
+                    <!-- Dynamic Rings -->
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Energy Efficiency</div>
+                        <div id="kpi-energy" class="kpi-value">94%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Maintenance</div>
+                        <div id="kpi-maint" class="kpi-value">Clear</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Stability</div>
+                        <div id="kpi-stab" class="kpi-value">99.2%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Readiness</div>
+                        <div id="kpi-prod" class="kpi-value">100%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Insights Split -->
+            <div class="ai-insights-split">
+
+                <!-- Left Box: AI Explanation -->
+                <div class="ai-explanation-box">
+                    <div
+                        style="display: flex; align-items: center; gap: 8px; color: var(--color-ai); font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">
+                        ✨ AI Safety Analysis
+                    </div>
+                    <p id="ai-explanation" style="font-size: 14px; line-height: 1.6; color: var(--text-primary);">
+                        The plant is operating in a safe and stable state. Gas pressures and thermal conditions across
+                        the Blast Furnace and Coke Oven are within normal parameters. All safety protocols are active.
+                    </p>
+                </div>
+
+                <!-- Right Box: Recommendations Checklist -->
+                <div class="glass-card" style="padding: 18px;">
+                    <h2 class="section-title" style="font-size: 17px; margin-bottom: 12px;">How to Improve Score</h2>
+                    <div id="recommendations-list">
+                        <!-- Dynamic Checklist -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Interactive Logic -->
+    <script>
+        // Ticking Clock
+        function updateClock() {
+            const now = new Date();
+            const str = now.toISOString().replace('T', ' ').substring(0, 19);
+            document.getElementById('live-clock').textContent = str;
+        }
+        setInterval(updateClock, 1000);
+
+        // Chart Instance
+        let trendChart;
+
+        function initChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '10:56'],
+                    datasets: [{
+                        label: 'Health Score',
+                        data: [92, 90, 89, 88, 87, 86, 87],
+                        borderColor: '#10B981',
+                        borderWidth: 3,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6B7280', font: { size: 11 } } },
+                        y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6B7280', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // Demo Scenarios Data
+        const scenarios = {
+            Safe: {
+                score: 87,
+                badge: '🟢 Safe Operation',
+                color: 'var(--color-safe)',
+                glow: 'var(--color-safe-glow)',
+                confidence: '98.4%',
+                chartData: [92, 90, 89, 88, 87, 86, 87],
+                contributors: [
+                    { name: '⚙️ Equipment Vibration', score: '-4.2' },
+                    { name: '🌡️ Blast Temp Slight Variance', score: '-3.1' },
+                    { name: '💧 Cooling Water Flow Fluctuation', score: '-2.5' },
+                    { name: '☁️ Trace CO Levels', score: '-1.8' },
+                    { name: '🔥 Pressure Nominal Rise', score: '-1.4' }
+                ],
+                circles: [
+                    { name: 'Blast Furnace', score: 89, status: 'Healthy' },
+                    { name: 'Coke Oven', score: 94, status: 'Healthy' },
+                    { name: 'Environment', score: 91, status: 'Healthy' },
+                    { name: 'Stability', score: 86, status: 'Fair' },
+                    { name: 'Compliance', score: 98, status: 'Healthy' },
+                    { name: 'Equipment', score: 82, status: 'Fair' }
+                ],
+                kpis: { energy: '94%', maint: 'Clear', stab: '99.2%', prod: '100%' },
+                explanation: `"The plant is operating in a safe and stable state. Gas pressures and thermal conditions across the Blast Furnace and Coke Oven are within normal parameters. All safety protocols are active."`,
+                recommendations: [
+                    { task: 'Optimize Blower Speed', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+4 Score' },
+                    { task: 'Routine Bearing Check', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+3 Score' },
+                    { task: 'Calibrate Gas Sensors', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+2 Score' },
+                    { task: 'Maintain Water Flow Rate', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+2 Score' },
+                    { task: 'Verify Shift Checklists', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+2 Score' }
+                ]
+            },
+
+            'Medium Risk': {
+                score: 68,
+                badge: '🟡 Medium Risk',
+                color: 'var(--color-medium)',
+                glow: 'var(--color-medium-glow)',
+                confidence: '95.1%',
+                chartData: [88, 84, 79, 75, 71, 68, 68],
+                contributors: [
+                    { name: '🔥 Gas Pressure Increasing', score: '-12.4' },
+                    { name: '🌡️ High Furnace Temperature', score: '-9.1' },
+                    { name: '💧 Cooling Water Flow Low', score: '-6.2' },
+                    { name: '⚙️ Blower Bearing Vibration', score: '-2.5' },
+                    { name: '☁️ CO Level Moderate Spike', score: '-1.8' }
+                ],
+                circles: [
+                    { name: 'Blast Furnace', score: 72, status: 'Fair' },
+                    { name: 'Coke Oven', score: 80, status: 'Healthy' },
+                    { name: 'Environment', score: 75, status: 'Fair' },
+                    { name: 'Stability', score: 68, status: 'Warning' },
+                    { name: 'Compliance', score: 90, status: 'Healthy' },
+                    { name: 'Equipment', score: 70, status: 'Fair' }
+                ],
+                kpis: { energy: '87%', maint: 'Inspect', stab: '94.0%', prod: '95%' },
+                explanation: `"Moderate thermal and pressure rises detected in Blast Furnace #1. Cooling water throughput has decreased by 12%. Immediate minor corrections are advised to prevent further escalation."`,
+                recommendations: [
+                    { task: 'Increase Cooling Water Flow', priority: 'High Priority', priorityClass: 'priority-high', gain: '+10 Score' },
+                    { task: 'Adjust Furnace Relief Valve', priority: 'Medium Priority', priorityClass: 'priority-medium', gain: '+7 Score' },
+                    { task: 'Inspect Blower Bearings', priority: 'Medium Priority', priorityClass: 'priority-medium', gain: '+5 Score' },
+                    { task: 'Verify Gas Flue Ducting', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+4 Score' },
+                    { task: 'Monitor CO Sensors', priority: 'Low Priority', priorityClass: 'priority-low', gain: '+2 Score' }
+                ]
+            },
+
+            'High Risk': {
+                score: 45,
+                badge: '🟠 High Risk',
+                color: 'var(--color-high)',
+                glow: 'var(--color-high-glow)',
+                confidence: '97.6%',
+                chartData: [82, 75, 68, 59, 52, 48, 45],
+                contributors: [
+                    { name: '🔥 Gas Pressure Rapid Rise', score: '-18.4' },
+                    { name: '🌡️ High Furnace Temperature', score: '-15.1' },
+                    { name: '💧 Cooling Water Line Drop', score: '-12.8' },
+                    { name: '☁️ CO Concentration Spike', score: '-5.2' },
+                    { name: '⚙️ Pusher Vibration Noise', score: '-3.5' }
+                ],
+                circles: [
+                    { name: 'Blast Furnace', score: 48, status: 'Warning' },
+                    { name: 'Coke Oven', score: 65, status: 'Fair' },
+                    { name: 'Environment', score: 55, status: 'Warning' },
+                    { name: 'Stability', score: 45, status: 'Warning' },
+                    { name: 'Compliance', score: 80, status: 'Fair' },
+                    { name: 'Equipment', score: 50, status: 'Warning' }
+                ],
+                kpis: { energy: '76%', maint: 'Urgent', stab: '82.5%', prod: '70%' },
+                explanation: `"High risk condition: Sustained thermal build-up combined with elevated gas pressure. Water flow has dropped significantly below safety threshold. Operators should initiate pressure relief."`,
+                recommendations: [
+                    { task: 'Activate Auxiliary Cooling Pump', priority: 'High Priority', priorityClass: 'priority-high', gain: '+15 Score' },
+                    { task: 'Reduce Blast Furnace Firing', priority: 'High Priority', priorityClass: 'priority-high', gain: '+12 Score' },
+                    { task: 'Isolate Gas Line Segment B', priority: 'High Priority', priorityClass: 'priority-high', gain: '+10 Score' },
+                    { task: 'Evacuate Non-Essential Staff', priority: 'Medium Priority', priorityClass: 'priority-medium', gain: '+5 Score' },
+                    { task: 'Dispatch Maintenance Crew', priority: 'Medium Priority', priorityClass: 'priority-medium', gain: '+3 Score' }
+                ]
+            },
+
+            'Critical Alert': {
+                score: 18,
+                badge: '🔴 Critical Alert',
+                color: 'var(--color-critical)',
+                glow: 'var(--color-critical-glow)',
+                confidence: '99.8%',
+                chartData: [75, 62, 45, 30, 22, 19, 18],
+                contributors: [
+                    { name: '🔥 Critical Gas Pressure Overload', score: '-28.5' },
+                    { name: '☁️ Severe CO / H2 Leakage Spike', score: '-24.2' },
+                    { name: '🌡️ Over-Temperature Excursion', score: '-18.9' },
+                    { name: '💧 Cooling System Failure', score: '-15.4' },
+                    { name: '👷 Worker Exposure Hazard', score: '-13.0' }
+                ],
+                circles: [
+                    { name: 'Blast Furnace', score: 15, status: 'Critical' },
+                    { name: 'Coke Oven', score: 25, status: 'Critical' },
+                    { name: 'Environment', score: 18, status: 'Critical' },
+                    { name: 'Stability', score: 12, status: 'Critical' },
+                    { name: 'Compliance', score: 40, status: 'Warning' },
+                    { name: 'Equipment', score: 22, status: 'Critical' }
+                ],
+                kpis: { energy: '45%', maint: 'Emergency', stab: '35.0%', prod: '0%' },
+                explanation: `"CRITICAL SAFETY HAZARD DETECTED: Hazardous gas leakage combined with cooling system failure. Automated safety protocols have triggered. Immediate personnel evacuation required."`,
+                recommendations: [
+                    { task: 'Emergency Evacuate Sector 4', priority: 'High Priority', priorityClass: 'priority-high', gain: '+30 Score' },
+                    { task: 'Trigger Automatic Gas Cut-off', priority: 'High Priority', priorityClass: 'priority-high', gain: '+25 Score' },
+                    { task: 'Enable Deluge Cooling Systems', priority: 'High Priority', priorityClass: 'priority-high', gain: '+15 Score' },
+                    { task: 'Notify Plant Fire & Safety', priority: 'High Priority', priorityClass: 'priority-high', gain: '+10 Score' },
+                    { task: 'Activate Emergency SCADA', priority: 'Medium Priority', priorityClass: 'priority-medium', gain: '+2 Score' }
+                ]
+            }
+        };
+
+        let currentScenario = 'Safe';
+
+        function setRiskScenario(name, btnElement = null) {
+            currentScenario = name;
+            const data = scenarios[name] || scenarios['Safe'];
+
+            // Update Active Pill Buttons
+            document.querySelectorAll('.demo-btn').forEach(btn => {
+                btn.className = 'demo-btn';
+                const scenarioKey = name.toLowerCase();
+                const btnText = btn.textContent.toLowerCase();
+                if ((scenarioKey === 'safe' && btnText.includes('safe')) ||
+                    (scenarioKey.includes('medium') && btnText.includes('medium')) ||
+                    (scenarioKey.includes('high') && btnText.includes('high')) ||
+                    (scenarioKey.includes('critical') && btnText.includes('critical'))) {
+                    btn.classList.add(`active-${scenarioKey.replace(/\s+/g, '-')}`);
+                }
+            });
+
+            // Hero Updates
+            document.getElementById('hero-score-val').textContent = data.score;
+            document.getElementById('hero-score-val').style.color = data.color;
+
+            const badge = document.getElementById('risk-badge');
+            badge.textContent = data.badge;
+            badge.style.color = data.color;
+            badge.style.borderColor = data.color;
+            badge.style.backgroundColor = data.glow;
+            badge.style.boxShadow = `0 0 25px ${data.glow}`;
+
+            const wrapper = document.getElementById('shield-wrapper');
+            wrapper.style.borderColor = data.color;
+            wrapper.style.color = data.color;
+            wrapper.style.boxShadow = `0 0 25px ${data.glow}`;
+
+            document.getElementById('meta-confidence').textContent = data.confidence;
+
+            // Chart Update
+            if (typeof trendChart !== 'undefined' && trendChart && trendChart.data) {
+                trendChart.data.datasets[0].data = data.chartData;
+                trendChart.data.datasets[0].borderColor = data.color;
+                trendChart.data.datasets[0].pointBackgroundColor = data.color;
+                trendChart.update();
+            }
+
+            // Contributors Update
+            const contList = document.getElementById('contributors-list');
+            contList.innerHTML = '';
+            data.contributors.forEach(c => {
+                const percentage = Math.abs(parseFloat(c.score)) * 3.5;
+                contList.innerHTML += `
+                    <div class="contributor-item">
+                        <div class="contributor-info">${c.name}</div>
+                        <div class="contributor-bar-wrapper">
+                            <div class="contributor-bar-fill" style="width: ${percentage}%; background: ${data.color};"></div>
+                        </div>
+                        <div class="contributor-score" style="color: ${data.color}">${c.score}</div>
+                    </div>
+                `;
+            });
+
+            // Circles Update
+            const circlesGrid = document.getElementById('circles-grid');
+            circlesGrid.innerHTML = '';
+            data.circles.forEach(circle => {
+                const strokeColor = circle.status === 'Healthy' ? 'var(--color-safe)' :
+                    circle.status === 'Fair' ? 'var(--color-info)' :
+                        circle.status === 'Warning' ? 'var(--color-medium)' : 'var(--color-critical)';
+                const offset = 188 - (188 * circle.score / 100);
+
+                circlesGrid.innerHTML += `
+                    <div class="circle-health-card">
+                        <div class="ring-svg-wrapper">
+                            <svg class="ring-svg" viewBox="0 0 70 70">
+                                <circle class="ring-bg" cx="35" cy="35" r="30"/>
+                                <circle class="ring-progress" cx="35" cy="35" r="30" 
+                                        style="stroke-dashoffset: ${offset}; stroke: ${strokeColor};"/>
+                            </svg>
+                            <span class="ring-inner-val">${circle.score}%</span>
+                        </div>
+                        <span class="circle-label">${circle.name}</span>
+                        <span class="circle-status-pill" style="color: ${strokeColor}; background: ${strokeColor}20;">${circle.status}</span>
+                    </div>
+                `;
+            });
+
+            // KPIs Update
+            document.getElementById('kpi-energy').textContent = data.kpis.energy;
+            document.getElementById('kpi-maint').textContent = data.kpis.maint;
+            document.getElementById('kpi-stab').textContent = data.kpis.stab;
+            document.getElementById('kpi-prod').textContent = data.kpis.prod;
+
+            // AI Insights Update
+            document.getElementById('ai-explanation').textContent = data.explanation;
+
+            // Recommendations Update
+            const recList = document.getElementById('recommendations-list');
+            recList.innerHTML = '';
+            data.recommendations.forEach(r => {
+                recList.innerHTML += `
+                    <div class="rec-item">
+                        <div class="rec-left">
+                            <span style="color: var(--color-safe)">✓</span>
+                            <span>${r.task}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="priority-badge ${r.priorityClass}">${r.priority}</span>
+                            <span class="rec-gain">${r.gain}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.addEventListener('load', () => {
+            initChart();
+            setRiskScenario('Safe');
+        });
+
+        // Poll Live Telemetry API if server is active
+        async function fetchLiveTelemetry() {
+            try {
+                const res = await fetch('/api/stream');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (data && data.Future_Risk_Level) {
+                    const mappedRisk = data.Future_Risk_Level === 'Low' ? 'Safe' : data.Future_Risk_Level;
+                    if (mappedRisk !== currentScenario && scenarios[mappedRisk]) {
+                        setRiskScenario(mappedRisk);
+                    }
+                }
+            } catch (err) {
+                // Keep interactive demo state running smoothly
+            }
+        }
+        setInterval(fetchLiveTelemetry, 3000);
+    </script>
+</body>
+
+</html>

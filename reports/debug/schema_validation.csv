@@ -1,0 +1,16 @@
+Feature_Name,Stage_Dataset,Stage_Selector,Stage_Preprocessor,Stage_Model_Input,Status,Notes
+Future_Risk_Level,Present,Removed,Removed,Removed,Removed,Target column mapped and purged from features
+Safety_Index,Present,Removed,Removed,Removed,Removed,Target leakage column purged
+Compound_Risk_Score,Present,Removed,Removed,Removed,Removed,Target leakage column purged
+Event_ID,Present,Removed,Removed,Removed,Removed,High-cardinality metadata column purged
+Rule_R001,Present,Removed,Removed,Removed,Removed,Safety rule output column (leakage) purged
+Rule_R020,Present,Removed,Removed,Removed,Removed,Safety rule output column (leakage) purged
+BF_Blast_Flow,Present,Present,Present,Present,Present,Continuous numeric sensor scaled
+BF_Top_Temperature,Present,Present,Present,Present,Present,Continuous numeric sensor scaled
+CO_Gas_Pressure,Present,Present,Present,Present,Present,Continuous numeric sensor scaled
+Shift_Type,Present,Present,Present,Present,Present,Categorical column one-hot encoded
+PPE_Compliance,Present,Present,Present,Present,Present,Categorical column one-hot encoded
+Maintenance_Active,Present,Present,Present,Present,Present,Boolean column cast to integer (0/1)
+Prediction_Window,Present,Removed,Removed,Removed,Removed,Dropped during data cleaning (constant column)
+BF_Blast_Flow_roll_avg_5,Present,Present,Present,Present,Present,Engineered rolling average (scaled)
+Equipment_Health_Index,Present,Present,Present,Present,Present,Engineered continuous indicator index (scaled)

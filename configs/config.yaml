@@ -1,0 +1,40 @@
+paths:
+  dataset_path: "data/industrial_safety_dataset_3.0.csv"
+  models_dir: "models/preprocessing"
+  data_dir: "data/processed"
+  reports_dir: "reports/ai_dataset_ready"
+  rules_json_path: "configs/safety_rules.json"
+
+preprocessing:
+  inject_training_noise: true
+  noise_std: 0.05
+  test_size: 0.30
+  random_state: 42
+
+model:
+  xgb:
+    n_estimators: 100
+    max_depth: 6
+    learning_rate: 0.1
+    eval_metric: "mlogloss"
+    random_state: 42
+
+sensors:
+  BF_Blast_Flow:
+    max: 3000.0
+    warn: 2200.0
+  BF_Top_Temperature:
+    max: 250.0
+    warn: 160.0
+  CO_Gas_Pressure:
+    max: 5.0
+    warn: 3.5
+  CO_CO:
+    max: 5.0
+    warn: 3.0
+  BF_H2:
+    max: 5.5
+    warn: 4.0
+  CO_NH3:
+    max: 1.0
+    warn: 0.5
