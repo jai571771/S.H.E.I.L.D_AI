@@ -14,17 +14,57 @@
 
 ---
 
+## Dataset
+
+The training dataset is **not included** in this repository. The primary dataset file (`industrial_safety_dataset_3.0.csv`) is approximately **144 MB**, which exceeds [GitHub's 100 MB per-file size limit](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-and-github). To keep the repository lightweight and push-friendly, the dataset is hosted externally on Google Drive instead.
+
+### Download Instructions
+
+1. **Download the dataset** from Google Drive:
+
+   [Download industrial_safety_dataset_3.0.csv](https://drive.google.com/file/d/19hi2bPWBVngs-eoYaZbl7TTLNzwHHGFk/view?usp=drive_link)
+
+2. **Create the `data/` folder** in the project root if it does not already exist:
+
+   ```bash
+   mkdir data
+   ```
+
+3. **Move the downloaded file** into the `data/` directory so the path looks like this:
+
+   ```text
+   S.H.E.I.L.D/
+   ├── data/
+   │   └── industrial_safety_dataset_3.0.csv
+   ├── src/
+   ├── models/
+   ├── README.md
+   └── requirements.txt
+   ```
+
+That's it — no renaming or extra setup is required.
+
+### Why the dataset is not in Git
+
+The `data/` directory is listed in [`.gitignore`](.gitignore) and is intentionally excluded from version control. This is standard practice for machine learning projects: source code, configuration, and documentation live in Git, while large datasets and trained model artifacts stay on disk locally (or in external storage). This keeps the repository fast to clone, easy to browse on GitHub, and free of file-size push errors.
+
+> **Note:** Pre-trained model files under `models/` are also excluded from Git for the same reason. Run `python run_pipeline.py` to train and generate them locally after downloading the dataset.
+
+---
+
 ## 🚀 Quick Start Guide
 
 ### 1. Installation
 
-Clone the repository and install dependencies:
+Clone the repository, install dependencies, and download the dataset (see [Dataset](#dataset) above):
 
 ```bash
 git clone https://github.com/jai571771/S.H.I.E.L.D_AI.git
 cd S.H.I.E.L.D_AI
 pip install -r requirements.txt
 ```
+
+Before running the training pipeline or full evaluation workflow, make sure `data/industrial_safety_dataset_3.0.csv` is in place.
 
 ---
 
@@ -87,7 +127,7 @@ pytest
 ## 📁 Repository Structure
 
 ```
-S.H.I.E.L.D_AI/
+S.H.E.I.L.D_AI/
 ├── app.py                      # Interactive Streamlit HMI Dashboard
 ├── telemetry_replay.py         # Real-time CLI SCADA telemetry stream runner
 ├── run_pipeline.py             # Model retraining & certification audit runner
@@ -96,8 +136,8 @@ S.H.I.E.L.D_AI/
 ├── configs/                    # Pipeline configuration & safety rules JSON
 │   ├── config.yaml
 │   └── safety_rules.json
-├── data/                       # Industrial dataset CSVs
-├── models/                     # Serialized XGBoost model artifacts
+├── data/                       # Training dataset (not in Git — see Dataset section)
+├── models/                     # Serialized XGBoost model artifacts (not in Git)
 ├── src/                        # Core backend modules
 │   ├── streaming/              # Streaming pipeline (Validator, Buffer, Stats, Health)
 │   ├── inference/              # Model inference engine & predictors
